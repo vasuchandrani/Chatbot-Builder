@@ -22,7 +22,7 @@ connectToDatabase("mongodb://localhost:27017/chatbot")
 
 // Middleware
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 
 // set view engine

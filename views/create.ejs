@@ -29,7 +29,6 @@
         #dropArea:hover {
             background-color: #eaf6ea;
         }
-
     </style>
 </head>
 <body>
@@ -37,7 +36,7 @@
     <h2>Create Your Chatbot</h2>
 
     <!-- Chatbot Creation Form -->
-    <form id="chatbotForm" enctype="multipart/form-data" action="/chatbot/upload" method="POST">
+    <form id="chatbotForm" enctype="multipart/form-data">
         <h4>Upload Documents</h4>
 
         <input type="text" id="botName" name="botName" placeholder="Chatbot Name" required>
@@ -47,36 +46,83 @@
             <input type="file" id="fileInput" name="documents" accept="application/pdf" multiple>
         </div>
         
-        <button type="submit">Upload Files</button>
+        <button type="button" id="uploadBtn">Upload Files</button>
     </form>
 
     <!-- Show Uploaded Data -->
-    <form id="showDataForm" action="/chatbot/showData" method="POST">
-        <button type="submit">Show Data</button>
-        <div id="uploadedFiles"></div>
-    </form>
+    <button id="showDataBtn">Show Data</button>
+    <div id="uploadedFiles"></div>
 
     <!-- Save & Deploy -->
-    <form id="deployForm" action="/chatbot/deploy" method="POST">
-        <button type="submit">Save & Deploy</button>
-    </form>
+    <button id="deployBtn">Save & Deploy</button>
 
     <script>
-        document.getElementById("deployForm").addEventListener("submit", async (event) => {
-            event.preventDefault();
-
-            const chatbotName = document.getElementById("botName").value;
+        document.getElementById("uploadBtn").addEventListener("click", async () => {
+            const chatbotName = document.getElementById("botName").value.trim();
             const userId = "exampleUser"; 
+
+            if (!chatbotName) {
+                alert("Chatbot name is required before uploading files.");
+                return;
+            }
+
+            const fileInput = document.getElementById("fileInput");
+            if (fileInput.files.length === 0) {
+                alert("Please select at least one file to upload.");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append("userId", userId); // ✅ Ensure `userId` is included
+            formData.append("chatbotName", chatbotName); // ✅ Ensure `chatbotName` is included
+            for (let i = 0; i < fileInput.files.length; i++) {
+                formData.append("documents", fileInput.files[i]);
+            }
+
+            const response = await fetch("/chatbot/upload", {
+                method: "POST",
+                body: formData
+            });
+
+            const result = await response.json();
+            alert(result.message);
+        });
+
+        document.getElementById("showDataBtn").addEventListener("click", async () => {
+            const chatbotName = document.getElementById("botName").value.trim();
+            const userId = "exampleUser"; 
+
+            if (!chatbotName) {
+                alert("Chatbot name is required before showing data.");
+                return;
+            }
+
+            const response = await fetch("/chatbot/showData", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ userId, chatbotName })
+            });
+
+            const files = await response.json();
+            document.getElementById("uploadedFiles").innerHTML = files.map(f => 
+                `<p><a href="${f.url}" target="_blank">${f.name}</a></p>`
+            ).join("");
+        });
+
+        document.getElementById("deployBtn").addEventListener("click", async () => {
+            const chatbotName = document.getElementById("botName").value.trim();
+            const userId = "exampleUser";
 
             if (!chatbotName) {
                 alert("Chatbot name is required before deploying.");
                 return;
             }
 
+            // ✅ Fix: Ensure chatbot ID is retrieved before deploying
             const response = await fetch("/chatbot/getChatbotId", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ chatbotName }),
+                body: JSON.stringify({ chatbotName })
             });
 
             const chatbotData = await response.json();
@@ -86,21 +132,23 @@
                 return;
             }
 
+            // ✅ Fix: Ensure deployment happens correctly and returns embed code
             const deployResponse = await fetch("/chatbot/deploy", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ chatbotId: chatbotData.chatbotId, userId, chatbotName }),
+                body: JSON.stringify({ chatbotId: chatbotData.chatbotId, userId, chatbotName })
             });
 
             const result = await deployResponse.json();
             alert(result.message);
 
             if (result.embedCode) {
-                document.getElementById("embedCodeDisplay").innerHTML =
-                    `<pre>${result.embedCode}</pre>`;
-
-                // ✅ NEW: Redirect user to chatbot page for local testing
-                window.location.href = `/chatbot/render?botId=${chatbotData.chatbotId}`;
+                document.getElementById("embedCodeDisplay").innerHTML = `<pre>${result.embedCode}</pre>`;
+                
+                // ✅ Fix: Automatically redirect to chatbot rendering page after deployment
+                setTimeout(() => {
+                    window.location.href = `/chatbot/render?botId=${chatbotData.chatbotId}`;
+                }, 2000);
             }
         });
     </script>

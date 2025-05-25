@@ -7,7 +7,6 @@ exports.extractText = async (userId, chatbotName) => {
     const files = fs.readdirSync(userDir).filter(file => file.endsWith(".pdf"));
 
     let trainingData = "";
-
     for (const file of files) {
         const filePath = path.join(userDir, file);
         const dataBuffer = fs.readFileSync(filePath);
