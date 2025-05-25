@@ -51,7 +51,7 @@
     </form>
 
     <!-- Show Uploaded Data -->
-    <form id="deployForm" action="/chatbot/showData" method="POST">
+    <form id="showDataForm" action="/chatbot/showData" method="POST">
         <button type="submit">Show Data</button>
         <div id="uploadedFiles"></div>
     </form>
@@ -60,6 +60,50 @@
     <form id="deployForm" action="/chatbot/deploy" method="POST">
         <button type="submit">Save & Deploy</button>
     </form>
+
+    <script>
+        document.getElementById("deployForm").addEventListener("submit", async (event) => {
+            event.preventDefault();
+
+            const chatbotName = document.getElementById("botName").value;
+            const userId = "exampleUser"; 
+
+            if (!chatbotName) {
+                alert("Chatbot name is required before deploying.");
+                return;
+            }
+
+            const response = await fetch("/chatbot/getChatbotId", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ chatbotName }),
+            });
+
+            const chatbotData = await response.json();
+
+            if (!chatbotData.chatbotId) {
+                alert("Chatbot ID not found. Please upload files first.");
+                return;
+            }
+
+            const deployResponse = await fetch("/chatbot/deploy", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ chatbotId: chatbotData.chatbotId, userId, chatbotName }),
+            });
+
+            const result = await deployResponse.json();
+            alert(result.message);
+
+            if (result.embedCode) {
+                document.getElementById("embedCodeDisplay").innerHTML =
+                    `<pre>${result.embedCode}</pre>`;
+
+                // ✅ NEW: Redirect user to chatbot page for local testing
+                window.location.href = `/chatbot/render?botId=${chatbotData.chatbotId}`;
+            }
+        });
+    </script>
 
     <div id="embedCodeDisplay"></div>
 </body>

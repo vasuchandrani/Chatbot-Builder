@@ -4,10 +4,14 @@ const fs = require('fs');
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        const userId = req.body.userId || 'defaultUser';
-        const chatbotName = req.body.chatbotName || 'defaultChatbot';
-        const userDir = path.join(__dirname, '../upload', userId, chatbotName);
+        const userId = req.body.userId;
+        const chatbotName = req.body.chatbotName;
 
+        if (!userId || !chatbotName) {
+            return cb(new Error("Missing user ID or chatbot name"), null); // ✅ FIX: Handle missing values
+        }
+
+        const userDir = path.join(__dirname, '../upload', userId, chatbotName);
         fs.mkdirSync(userDir, { recursive: true });
 
         cb(null, userDir);

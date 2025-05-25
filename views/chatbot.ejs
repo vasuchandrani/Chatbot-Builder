@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot - <%= chatbotName %></title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        #chatContainer {
+            width: 50%;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+        }
+        #chatOutput {
+            height: 300px;
+            overflow-y: scroll;
+            border-bottom: 1px solid #ccc;
+        }
+        #chatInput {
+            width: 100%;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h2>Chat with <%= chatbotName %></h2>
+    <div id="chatContainer">
+        <div id="chatOutput"></div>
+        <input type="text" id="chatInput" placeholder="Ask a question..." />
+        <button onclick="sendMessage()">Send</button>
+    </div>
+
+    <script>
+        async function sendMessage() {
+            const userMessage = document.getElementById("chatInput").value;
+            if (!userMessage) return;
+
+            const chatbotId = "<%= chatbotId %>";
+
+            const response = await fetch("/chatbot/ask", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ chatbotId, message: userMessage }),
+            });
+
+            const result = await response.json();
+            document.getElementById("chatOutput").innerHTML += `<p><strong>You:</strong> ${userMessage}</p>`;
+            document.getElementById("chatOutput").innerHTML += `<p><strong>Chatbot:</strong> ${result.answer}</p>`;
+
+            document.getElementById("chatInput").value = "";
+        }
+    </script>
+</body>
+</html>
