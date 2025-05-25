@@ -1,17 +1,11 @@
-const express = require('express');
-const { createChatbot, uploadFiles, addMessage, addFAQ, deployChatbot } = require('../controllers/chatbotController');
-const { restrictToLoggedinUserOnly } = require('../middlewares/authMiddleware');
-const upload = require('../services/localUpload'); // Using local file storage now
-
+const express = require("express");
 const router = express.Router();
+const upload = require("../services/localUpload");
+const chatbotController = require("../controllers/chatbotController");
 
-// File Upload Route (Local Server Storage)
-router.post('/upload', restrictToLoggedinUserOnly, upload.array('documents', 5), uploadFiles);
-
-// Chatbot CRUD Operations
-router.post('/create', restrictToLoggedinUserOnly, createChatbot);
-router.post('/addMessage', restrictToLoggedinUserOnly, addMessage);
-router.post('/addFAQ', restrictToLoggedinUserOnly, addFAQ);
-router.post('/deploy', restrictToLoggedinUserOnly, deployChatbot);
+router.post("/upload", upload.array("documents", 10), chatbotController.uploadFiles);
+router.get("/showData", chatbotController.showData);
+router.get("/getChatbotId", chatbotController.getChatbotId);
+router.post("/deploy", chatbotController.deployChatbot);
 
 module.exports = router;

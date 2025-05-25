@@ -1,48 +1,64 @@
-const chatbot = require("../models/chatbot");
-const path = require('path');
+const chatbotModel = require("../models/chatbot"); 
+const fs = require("fs");
+const path = require("path");
 
 exports.uploadFiles = async (req, res) => {
     try {
-        const { chatbotId } = req.body;
-        const fileUrls = req.files.map(file => path.join('/uploads', file.filename));
+        const { userId, chatbotName } = req.body;
 
-        await chatbot.findByIdAndUpdate(chatbotId, { $push: { document: { $each: fileUrls } } });
+        if (!req.files || req.files.length === 0) {
+            return res.status(400).json({ message: "No files uploaded." });
+        }
 
-        res.json({ message: "Files uploaded successfully!", fileUrls });
+        const userDir = path.join(__dirname, "../upload", userId, chatbotName);
+        fs.mkdirSync(userDir, { recursive: true });
+
+        const fileUrls = req.files.map(file => ({
+            name: file.filename,
+            url: `/uploads/${userId}/${chatbotName}/${file.filename}`
+        }));
+
+        res.json({ message: "Files uploaded successfully!", files: fileUrls });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 };
 
-exports.createChatbot = async (req, res) => {
+exports.showData = async (req, res) => {
     try {
-        const { botName } = req.body;
-        const userId = req.user._id;
+        const { userId, chatbotName } = req.query;
 
-        const chatbot = new chatbot({ userId, name: botName, document: [], messages: "", faqs: [] });
-        await chatbot.save();
+        if (!userId || !chatbotName) {
+            return res.status(400).json({ message: "User ID and chatbot name are required." });
+        }
 
-        res.json({ message: "chatbot created successfully!", chatbotId: chatbot._id });
+        const userDir = path.join(__dirname, "../upload", userId, chatbotName);
+
+        if (!fs.existsSync(userDir)) {
+            return res.status(400).json({ message: "No files uploaded for this chatbot yet." });
+        }
+
+        const files = fs.readdirSync(userDir).map(file => ({
+            name: file,
+            url: `/uploads/${userId}/${chatbotName}/${file}`
+        }));
+
+        res.json(files);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 };
 
-exports.addMessage = async (req, res) => {
+exports.getChatbotId = async (req, res) => {
     try {
-        const { chatbotId, message } = req.body;
-        await chatbot.findByIdAndUpdate(chatbotId, { $set: { messages: message } });
-        res.json({ message: "Message added successfully!" });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-};
+        const { chatbotName } = req.query;
+        const chatbot = await chatbotModel.findOne({ name: chatbotName });
 
-exports.addFAQ = async (req, res) => {
-    try {
-        const { chatbotId, question, answer } = req.body;
-        await chatbot.findByIdAndUpdate(chatbotId, { $push: { faqs: { question, answer } } });
-        res.json({ message: "FAQ added successfully!" });
+        if (!chatbot) {
+            return res.status(404).json({ message: "Chatbot not found." });
+        }
+
+        res.json({ chatbotId: chatbot._id });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -51,6 +67,9 @@ exports.addFAQ = async (req, res) => {
 exports.deployChatbot = async (req, res) => {
     try {
         const { chatbotId } = req.body;
+        if (!chatbotId) {
+            return res.status(400).json({ message: "Chatbot ID missing." });
+        }
 
         const embedCode = `
         <script>
@@ -63,10 +82,9 @@ exports.deployChatbot = async (req, res) => {
                 document.body.appendChild(iframe);
             };
         })();
-        </script>
-        `;
+        </script>`;
 
-        res.json({ embedCode });
+        res.json({ message: "Chatbot deployed successfully!", embedCode });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }

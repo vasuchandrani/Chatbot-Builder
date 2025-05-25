@@ -1,24 +1,19 @@
-const axios = require("axios");
+const pdfParse = require("pdf-parse");
+const fs = require("fs");
+const path = require("path");
 
-async function getFileBasedChatbotResponse(files, userMessage) {
-    try {
-        const combinedText = files.map(file => file.content).join("\n");
+exports.extractText = async (userId, chatbotName) => {
+    const userDir = path.join(__dirname, "../upload", userId, chatbotName);
+    const files = fs.readdirSync(userDir).filter(file => file.endsWith(".pdf"));
 
-        const response = await axios.post("https://api.openai.com/v1/chat/completions", {
-            model: "gpt-3.5-turbo",
-            messages: [
-                { role: "system", content: "Answer using the following document data only." },
-                { role: "user", content: `Data: ${combinedText}\n\nQuestion: ${userMessage}` }
-            ]
-        }, {
-            headers: { Authorization: `Bearer YOUR_API_KEY` }
-        });
+    let trainingData = "";
 
-        return response.data.choices[0].message.content;
-    } catch (error) {
-        console.error("Chatbot AI Error:", error);
-        return "Oops! Something went wrong.";
+    for (const file of files) {
+        const filePath = path.join(userDir, file);
+        const dataBuffer = fs.readFileSync(filePath);
+        const parsedData = await pdfParse(dataBuffer);
+        trainingData += parsedData.text + "\n";
     }
-}
 
-module.exports = { getFileBasedChatbotResponse };
+    return trainingData;
+};
