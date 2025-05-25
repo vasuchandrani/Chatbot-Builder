@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Your Chatbot</title>
+
+    <style>
+        /* General Layout */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+
+        /* Headings */
+        h1, h2, h3, h4 {
+            color: #333;
+        }
+
+        /* Buttons */
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+            border-radius: 5px;
+            margin: 5px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        /* Input Fields */
+        input[type="text"], input[type="file"] {
+            padding: 10px;
+            width: 80%;
+            margin: 10px auto;
+            display: block;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        /* Drop Area */
+        #dropArea {
+            border: 2px dashed #4CAF50;
+            padding: 20px;
+            margin: 20px auto;
+            width: 60%;
+            text-align: center;
+            background-color: #fff;
+            cursor: pointer;
+        }
+
+        #dropArea:hover {
+            background-color: #eaf6ea;
+        }
+
+        /* Lists */
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        li {
+            background: #fff;
+            padding: 8px;
+            margin: 5px auto;
+            width: 60%;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            #dropArea, input[type="text"], button {
+                width: 90%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Create Your Chatbot</h2>
+
+    <!-- Chatbot Creation Form -->
+    <form id="chatbotForm" enctype="multipart/form-data" action="/chatbot/create" method="POST">
+        <h4>Upload Documents</h4>
+
+        <input type="text" id="botName" name="botName" placeholder="Chatbot Name" required>
+        
+        <div id="dropArea">
+            <p>Drag & Drop your PDF files here or click to upload</p>
+            <input type="file" id="fileInput" name="documents" accept="application/pdf" multiple>
+        </div>
+        
+        <button type="submit">Upload Files</button>
+    </form>
+
+    <script>
+        const fileInput = document.getElementById("fileInput");
+        const chatbotForm = document.getElementById("chatbotForm");
+
+        chatbotForm.addEventListener("submit", async (event) => {
+            event.preventDefault();
+            const formData = new FormData(chatbotForm);
+            
+            const response = await fetch("/chatbot/create", {
+                method: "POST",
+                body: formData,
+            });
+
+            const result = await response.json();
+            alert(result.message);
+        });
+    </script>
+
+</body>
+</html>

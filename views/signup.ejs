@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- css file -->
+    <link rel="stylesheet" href="../script-style/style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign-up</title>
+</head>
+<body>
+    <h1>Sign-Up</h1>
+    <div>
+        <form action="/user" method="post">
+
+            <label>Enter Your Name</label>
+            <input type="text" required name="name">
+            <label>E-mail</label>
+            <input type="text" required name="email">
+            <label>Password</label>
+            <input type="text" required name="password">
+            
+            <button type="submit">
+                Singup
+            </button>
+        </form>
+    </div>
+    <div>
+        <p>already have an account?</p>
+        <a href="http://localhost:5000/login">Click here</a>
+    </div>
+</body>
+</html>
