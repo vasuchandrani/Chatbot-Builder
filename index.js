@@ -42,4 +42,4 @@ const chatbotRoutes = require('./routes/chatbotRoutes')
 
 app.use('/', checkAuth, staticRouter);
 app.use('/user', authRoutes);
-app.use('/chatbot',restrictToLoggedinUserOnly, chatbotRoutes);
+app.use('/chatbot', restrictToLoggedinUserOnly, chatbotRoutes);

@@ -37,7 +37,7 @@
     <h2>Create Your Chatbot</h2>
 
     <!-- Chatbot Creation Form -->
-    <form id="chatbotForm" enctype="multipart/form-data" action="/chatbot/create" method="POST">
+    <form id="chatbotForm" enctype="multipart/form-data" action="/chatbot/upload" method="POST">
         <h4>Upload Documents</h4>
 
         <input type="text" id="botName" name="botName" placeholder="Chatbot Name" required>
@@ -51,75 +51,15 @@
     </form>
 
     <!-- Show Uploaded Data -->
-    <button onclick="showUploadedFiles()">Show Data</button>
-    <div id="uploadedFiles"></div>
+    <form id="deployForm" action="/chatbot/showData" method="POST">
+        <button type="submit">Show Data</button>
+        <div id="uploadedFiles"></div>
+    </form>
 
     <!-- Save & Deploy -->
     <form id="deployForm" action="/chatbot/deploy" method="POST">
         <button type="submit">Save & Deploy</button>
     </form>
-
-<script>
-    document.getElementById("chatbotForm").addEventListener("submit", async (event) => {
-        event.preventDefault();
-
-        const formData = new FormData(event.target);
-        formData.append("userId", "exampleUser"); 
-        formData.append("chatbotName", document.getElementById("botName").value); 
-
-        const response = await fetch("/chatbot/upload", {
-            method: "POST",
-            body: formData,
-        });
-
-        const result = await response.json();
-        alert(result.message);
-    });
-
-    async function showUploadedFiles() {
-        const userId = "exampleUser"; 
-        const chatbotName = document.getElementById("botName").value;
-
-        const response = await fetch(`/chatbot/showData?userId=${userId}&chatbotName=${chatbotName}`);
-        const files = await response.json();
-
-        document.getElementById("uploadedFiles").innerHTML = files.map(f => 
-            `<p><a href="${f.url}" target="_blank">${f.name}</a></p>`
-        ).join("");
-    }
-
-    document.getElementById("deployForm").addEventListener("submit", async (event) => {
-        event.preventDefault();
-
-        const chatbotName = document.getElementById("botName").value;
-        if (!chatbotName) {
-            alert("Chatbot name is required before deploying.");
-            return;
-        }
-
-        const response = await fetch("/chatbot/getChatbotId?chatbotName=" + chatbotName);
-        const chatbotData = await response.json();
-
-        if (!chatbotData.chatbotId) {
-            alert("Chatbot ID not found. Please upload files first.");
-            return;
-        }
-
-        const deployResponse = await fetch("/chatbot/deploy", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ chatbotId: chatbotData.chatbotId }),
-        });
-
-        const result = await deployResponse.json();
-        alert(result.message);
-
-        if (result.embedCode) {
-            document.getElementById("embedCodeDisplay").innerHTML =
-                `<pre>${result.embedCode}</pre>`;
-        }
-    });
-</script>
 
     <div id="embedCodeDisplay"></div>
 </body>
