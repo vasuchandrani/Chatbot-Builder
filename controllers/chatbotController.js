@@ -4,26 +4,21 @@ const path = require("path");
 const aiService = require("../services/aiService");
 
 exports.uploadFiles = async (req, res) => {
-    try {
-        const { userId, chatbotName } = req.body;
+  try {
+    const { userId, chatbotName } = req.body;
 
-        if (!req.files || req.files.length === 0) {
-            return res.status(400).json({ message: "No files uploaded." });
-        }
-
-        const userDir = path.join(__dirname, "../upload", userId, chatbotName);
-        fs.mkdirSync(userDir, { recursive: true });
-
-        const fileUrls = req.files.map(file => ({
-            name: file.filename,
-            url: `/uploads/${userId}/${chatbotName}/${file.filename}`
-        }));
-
-        res.json({ message: "Files uploaded successfully!", files: fileUrls });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ message: "No files uploaded." });
     }
+
+    const fileList = req.files.map(file => file.originalname);
+
+    res.status(200).json({ message: "Files uploaded successfully!", files: fileList });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
+
 
 exports.showData = async (req, res) => {
     try {

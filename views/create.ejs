@@ -1,158 +1,157 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Your Chatbot</title>
-
-    <style>
-        /* General Layout */
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            text-align: center;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 20px;
-        }
-
-        /* Drop Area */
-        #dropArea {
-            border: 2px dashed #4CAF50;
-            padding: 20px;
-            margin: 20px auto;
-            width: 60%;
-            text-align: center;
-            background-color: #fff;
-            cursor: pointer;
-        }
-
-        #dropArea:hover {
-            background-color: #eaf6ea;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Create Chatbot</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
+<body class="flex flex-col min-h-screen bg-black text-white">
 
-    <h2>Create Your Chatbot</h2>
 
-    <!-- Chatbot Creation Form -->
-    <form id="chatbotForm" enctype="multipart/form-data">
-        <h4>Upload Documents</h4>
+  <!-- 🌐 Navbar -->
+  <nav class="bg-gray-900 shadow p-4 flex items-center border-b border-cyan-500">
+    <div class="text-2xl font-bold neon-title w-1/3 text-cyan-400">Chatbot Builder</div>
+    <div class="flex gap-x-16 justify-center w-1/3">
+      <a href="/pricing" class="text-cyan-300 hover:underline">Pricing</a>
+      <a href="/" class="text-cyan-300 underline">Create</a>
+      <a href="/userBots" class="text-cyan-300 hover:underline">You</a>
+    </div>
+    <div class="w-1/3 text-right">
+      <!-- Optional buttons -->
+    </div>
+  </nav>
 
-        <input type="text" id="botName" name="botName" placeholder="Chatbot Name" required>
-        
-        <div id="dropArea">
-            <p>Drag & Drop your PDF files here or click to upload</p>
-            <input type="file" id="fileInput" name="documents" accept="application/pdf" multiple>
-        </div>
-        
-        <button type="button" id="uploadBtn">Upload Files</button>
+  <!-- Main Container -->
+  <main class="flex-grow flex justify-center items-center px-4 py-10">
+  <div class="bg-gray-900 border border-cyan-500 rounded-xl shadow-lg p-8 w-full max-w-md">
+
+    <!-- Header -->
+    <h2 class="text-center text-3xl font-bold text-cyan-400 mb-6">Create Your Chatbot</h2>
+
+    <!-- Upload Form -->
+    <form id="chatbotForm" enctype="multipart/form-data" action="/chatbot/upload" method="POST" class="space-y-5">
+      <input type="text" id="botName" name="botName" placeholder="Chatbot Name" required
+            class="w-full p-3 rounded-md bg-gray-800 border border-cyan-400 text-white outline-none focus:ring-2 focus:ring-cyan-500" />
+
+      <!-- Drop Area -->
+      <div id="dropArea"
+          class="border-2 border-dashed border-cyan-400 bg-gray-800 p-5 rounded-md text-center cursor-pointer hover:bg-gray-700">
+        <p class="text-cyan-300 mb-2">Drag & Drop PDF files here or click to upload</p>
+        <input type="file" id="fileInput" name="documents" accept="application/pdf" multiple class="text-white" />
+      </div>
+
+      <!-- Upload + Show Row -->
+      <div class="flex justify-between space-x-4">
+        <button type="submit" id="uploadBtn"
+                class="w-1/2 bg-cyan-500 hover:bg-cyan-600 text-white py-2 px-4 rounded-md font-semibold transition">
+          Upload Files
+        </button>
+
+        <form id="showDataForm" action="/chatbot/showData" method="POST" class="w-1/2">
+          <button type="submit" 
+                  class="w-1/2 bg-gray-600 hover:bg-gray-500 text-white py-2 px-2 rounded-md font-semibold transition">
+            Show Data
+          </button>
+        </form>
+      </div>
     </form>
 
-    <!-- Show Uploaded Data -->
-    <button id="showDataBtn">Show Data</button>
-    <div id="uploadedFiles"></div>
-
     <!-- Save & Deploy -->
-    <button id="deployBtn">Save & Deploy</button>
+    <form id="deployForm" action="/chatbot/deploy" method="POST" class="mt-4">
+      <button type="submit" id="deployBtn"
+              class="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md font-semibold transition">
+        Save & Deploy
+      </button>
+    </form>
 
-    <script>
-        document.getElementById("uploadBtn").addEventListener("click", async () => {
-            const chatbotName = document.getElementById("botName").value.trim();
-            const userId = "exampleUser"; 
+    <!-- Embed Code -->
+    <div id="embedCodeDisplay" class="mt-6 bg-gray-800 p-4 rounded text-green-300 text-sm whitespace-pre-wrap"></div>
 
-            if (!chatbotName) {
-                alert("Chatbot name is required before uploading files.");
-                return;
-            }
+  </div>
+</main>
 
-            const fileInput = document.getElementById("fileInput");
-            if (fileInput.files.length === 0) {
-                alert("Please select at least one file to upload.");
-                return;
-            }
 
-            const formData = new FormData();
-            formData.append("userId", userId); // ✅ Ensure `userId` is included
-            formData.append("chatbotName", chatbotName); // ✅ Ensure `chatbotName` is included
-            for (let i = 0; i < fileInput.files.length; i++) {
-                formData.append("documents", fileInput.files[i]);
-            }
+  <!-- Script -->
+  <script>
+    document.getElementById("uploadBtn").addEventListener("click", async (event) => {
+        event.preventDefault(); // ✅ Prevents default form submission behavior
 
-            const response = await fetch("/chatbot/upload", {
-                method: "POST",
-                body: formData
-            });
+        const chatbotName = document.getElementById("botName").value.trim();
+        const userId = "exampleUser"; // Replace with actual user logic
 
-            const result = await response.json();
-            alert(result.message);
+        if (!chatbotName) {
+            alert("Chatbot name is required before uploading files.");
+            return;
+        }
+
+        const fileInput = document.getElementById("fileInput");
+        if (fileInput.files.length === 0) {
+            alert("Please select at least one file to upload.");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("userId", userId); // ✅ Fix: Correctly appends userId
+        formData.append("chatbotName", chatbotName);
+        for (let i = 0; i < fileInput.files.length; i++) {
+            formData.append("documents", fileInput.files[i]);
+        }
+
+        const response = await fetch("/chatbot/upload", {
+            method: "POST",
+            body: formData
         });
 
-        document.getElementById("showDataBtn").addEventListener("click", async () => {
-            const chatbotName = document.getElementById("botName").value.trim();
-            const userId = "exampleUser"; 
+        const result = await response.json();
+        alert(result.message);
+    });
 
-            if (!chatbotName) {
-                alert("Chatbot name is required before showing data.");
-                return;
-            }
+    document.getElementById("deployBtn").addEventListener("click", async (event) => {
+        event.preventDefault(); // ✅ Prevents default form submission behavior
 
-            const response = await fetch("/chatbot/showData", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ userId, chatbotName })
-            });
+        const chatbotName = document.getElementById("botName").value.trim();
+        const userId = "exampleUser";
 
-            const files = await response.json();
-            document.getElementById("uploadedFiles").innerHTML = files.map(f => 
-                `<p><a href="${f.url}" target="_blank">${f.name}</a></p>`
-            ).join("");
+        if (!chatbotName) {
+            alert("Chatbot name is required before deploying.");
+            return;
+        }
+
+        const response = await fetch("/chatbot/getChatbotId", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ chatbotName })
         });
 
-        document.getElementById("deployBtn").addEventListener("click", async () => {
-            const chatbotName = document.getElementById("botName").value.trim();
-            const userId = "exampleUser";
+        const chatbotData = await response.json();
 
-            if (!chatbotName) {
-                alert("Chatbot name is required before deploying.");
-                return;
-            }
+        if (!chatbotData.chatbotId) {
+            alert("Chatbot ID not found. Please upload files first.");
+            return;
+        }
 
-            // ✅ Fix: Ensure chatbot ID is retrieved before deploying
-            const response = await fetch("/chatbot/getChatbotId", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ chatbotName })
-            });
-
-            const chatbotData = await response.json();
-
-            if (!chatbotData.chatbotId) {
-                alert("Chatbot ID not found. Please upload files first.");
-                return;
-            }
-
-            // ✅ Fix: Ensure deployment happens correctly and returns embed code
-            const deployResponse = await fetch("/chatbot/deploy", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ chatbotId: chatbotData.chatbotId, userId, chatbotName })
-            });
-
-            const result = await deployResponse.json();
-            alert(result.message);
-
-            if (result.embedCode) {
-                document.getElementById("embedCodeDisplay").innerHTML = `<pre>${result.embedCode}</pre>`;
-                
-                // ✅ Fix: Automatically redirect to chatbot rendering page after deployment
-                setTimeout(() => {
-                    window.location.href = `/chatbot/render?botId=${chatbotData.chatbotId}`;
-                }, 2000);
-            }
+        const deployResponse = await fetch("/chatbot/deploy", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ chatbotId: chatbotData.chatbotId, userId, chatbotName })
         });
-    </script>
 
-    <div id="embedCodeDisplay"></div>
+        const result = await deployResponse.json();
+        alert(result.message);
+
+        if (result.embedCode) {
+            document.getElementById("embedCodeDisplay").innerHTML = `<pre>${result.embedCode}</pre>`;
+            setTimeout(() => {
+                window.location.href = `/chatbot/render?botId=${chatbotData.chatbotId}`;
+            }, 2000);
+        }
+    });
+</script>
+ <footer class="bg-gray-900 text-center py-4 border-t border-cyan-500">
+  <p class="text-gray-400">&copy; <%= new Date().getFullYear() %> Chatbot Builder. All rights reserved.</p>
+</footer>
+
+
 </body>
 </html>
